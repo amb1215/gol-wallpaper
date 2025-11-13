@@ -3,6 +3,7 @@
 import random
 import time
 import copy
+from PIL import Image
 
 
 def update_matrix():
@@ -10,8 +11,8 @@ def update_matrix():
     for y in range(height):
         for x in range(width):
             amount = get_neighbors_count(x, y)
-            if amount == 2 and matrix[y][x] == 1 or amount == 3:
-                matrix_buffer[y][x] = 1
+            if amount == 2 and matrix[y][x] != 0 or amount == 3:
+                matrix_buffer[y][x] += 1
             else:
                 matrix_buffer[y][x] = 0
     matrix = copy.deepcopy(matrix_buffer)
@@ -21,7 +22,7 @@ def get_neighbors_count(x_input, y_input):
     count = 0
     for x in range(-1,2):
         for y in range(-1,2):
-            if matrix[int((y_input + y) % height)][int((x_input + x) % width)] and (x != 0 or y != 0):
+            if matrix[int((y_input + y) % height)][int((x_input + x) % width)] != 0 and (x != 0 or y != 0):
                 count += 1
     return count
 
@@ -33,19 +34,31 @@ def render_matrix_terminal():
             if matrix[y][x] == 0:
                 print_buffer = print_buffer + " "
             else:
-                print_buffer = print_buffer + "#"
+                print_buffer = print_buffer + str(matrix[y][x])[-1]
         print_buffer = print_buffer + "\n" 
     print(print_buffer)
 
 
-width = 239
-height = 75
+def render_matrix_png():
+    global width
+    global height
+    img = Image.new( 'RGB', (width, height), "black")
+    pixels = img.load()
+    for y in range(height):
+        for x in range(width):
+            pixels[x, y] = matrix[y][x] * 65793
+    img.show()
+
+
+width = 1920
+height = 1080
 
 matrix = [[random.randint(0,1) for i in range(width)] for i in range(height)]
 
 matrix_buffer = copy.deepcopy(matrix)
 
-while True:
-    render_matrix_terminal()
-    time.sleep(.1)
+for i in range(254):
+    time.sleep(0)
     update_matrix()
+    print("finished frame " + str(i + 1) + "/254")
+render_matrix_png()
